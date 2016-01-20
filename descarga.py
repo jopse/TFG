@@ -9,116 +9,137 @@ from html.entities import name2codepoint
 from html.parser import HTMLParser
 import xml.etree.cElementTree as ET
 
+
+URL = "http://erc.europa.eu/projects-and-results/erc-funded-projects?f[2]=sm_field_cordis_project_funding%3A{0!s}%20%28{1!s}%29&page={2!s}"
+ABBR = {'CoG':'Consolidator%20Grants','StG':'Starting%20Grant','PoC':'Proof%20of%20Concept'}
+
+
 '''
 Redefinición de metodos para facilitar el parseado
 '''
-bodyData = []
+
 class MyHTMLParser(HTMLParser):
+    bodyData = dict()
+    projects = False
+    empiezaP = -1
+    etiqueta = ""
     def handle_starttag(self, tag, attrs):
-        print ("Start tag:", tag)
-        for attr in attrs:
-            print ("     attr:", attr)
+        if(tag == "ul"):
+            self.projects = True
     def handle_endtag(self, tag):
-        print ("End tag  :", tag)
+        if(tag == "ul"):
+            self.projects = False
     def handle_data(self, data):
-        global bodyData
-        bodyData.append(data)
-        print ("Data     :", data)
+        if self.projects:
+            if data == "Rcn":
+                self.empiezaP = 0
+            if self.empiezaP > 0 and self.empiezaP %2 == 0:
+                self.etiqueta = data
+                self.empiezaP+=1
+            elif self.empiezaP > 0:
+                self.bodyData[self.etiqueta] = data
+                self.empiezaP+=1
+            if self.empiezaP > 17:
+                self.empiezaP = -1
     def handle_comment(self, data):
-        print ("Comment  :", data)
+        pass
     def handle_entityref(self, name):
         c = name2codepoint[name]
-        print ("Named ent:", c)
     def handle_charref(self, name):
         if name.startswith('x'):
             c = int(name[1:], 16)
         else:
             c = int(name)
-        print ("Num ent  :", c)
     def handle_decl(self, data):
-        print ("Decl     :", data)
-
+        pass
 #Creacion del parser
 parser=MyHTMLParser()
 #Variable que contendra todo el codigo de todos los proyectos
 consolidatorGrantsProjects=""
 
 #Recorre todas las 62 paginas para extraer los proyectos solamente
-for i in range(62):
-    page=str(i)
-    url='http://erc.europa.eu/projects-and-results/erc-funded-projects?f[1]=sm_field_cordis_project_funding%3AConsolidator%20Grants%20%28CoG%29&page=' + page
-    with request.urlopen(url) as response:
+for i in range(1):
+    with request.urlopen(URL.format(ABBR['CoG'],'CoG',i)) as response:
         html = response.read()
         html = html.decode('utf-8')
-        contenido = html.split('<ul>')
-        contenido = contenido[1]
-        contenido = contenido.split('</ul>')
-        contenido = contenido[0]
-        #print(contenido)
-        consolidatorGrantsProjects+=contenido
-parser.feed(consolidatorGrantsProjects)
+        f = open('hecho.html','w')
+        f.write(html)
+        f.close()
+        parser.feed(html)
+print(parser.bodyData)
 
-print("----------")
-print(bodyData)
+exit()
+#print("----------")
+#print(bodyData)
 
 # Coloca primero el acronimo del proyecto para seguir un orden logico
-contador=1
-for i in range(len(bodyData)):
-    if contador == 6:
-        bodyData.insert(i-5, bodyData.pop(i))
-        bodyData.insert(i-5, bodyData.pop(i))
-    if "Rcn" in bodyData[i]:
-        contador=1
-    contador+=1
-print("----------")
-print(bodyData)
+#contador=1
+#for i in range(len(parser.bodyData)):
+#    if contador == 6:
+#        parser.bodyData.insert(i-5, parser.bodyData.pop(i))
+#        parser.bodyData.insert(i-5, parser.bodyData.pop(i))
+#    if "Rcn" in parser.bodyData[i]:
+#        contador=1
+#    contador+=1
+#print("----------")
+#print(bodyData)
+f = open('salida.xml','w')
+for i in range(len(parser.bodyData)):
+    f.write(parser.bodyData[i])
+f.close()
 
 #convierte a arbol xml los proyectos
 top = ET.Element("CGProjects")
-for i in range(len(bodyData)):
-    if(bodyData[i] == "Project acronym"):
+exit()
+for i in range(len(parser.bodyData)):
+    if(parser.bodyData[i] == "Project acronym"):
         lastProject = ET.SubElement(top, "Project")
-        lastProject.attrib={"name":bodyData[i+1]}
-    elif(bodyData[i] == "Rcn"):
+        lastProject.attrib={"acronym":parser.bodyData[i+1]}
+    elif(parser.bodyData[i] == "Rcn"):
         rcn = ET.SubElement(lastProject, "Rcn")
-        rcn.text = bodyData[i+1]
-    elif(bodyData[i] == "Nid"):
+        rcn.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Nid"):
         nid = ET.SubElement(lastProject, "Nid")
-        nid.text = bodyData[i+1]
-    elif(bodyData[i] == "Host Institution (HI)"):
+        nid.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Host Institution (HI)"):
         hi = ET.SubElement(lastProject, "HI")
-        hi.text = bodyData[i+1]
-    elif(bodyData[i] == "Project"):
-        p = ET.SubElement(lastProject, "Project")
-        p.text = bodyData[i+1]
-    elif(bodyData[i] == "Researcher (PI)"):
+        hi.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Project"):
+        p = ET.SubElement(lastProject, "Name")
+        p.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Researcher (PI)"):
         pi = ET.SubElement(lastProject, "PI")
-        pi.text = bodyData[i+1]
-    elif(bodyData[i] == "Call details"):
+        pi.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Call details"):
         cd = ET.SubElement(lastProject, "Call_Details")
-        cd.text = bodyData[i+1]
-    elif(bodyData[i] == "Summary"):
+        cd.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Summary"):
         sm = ET.SubElement(lastProject, "Summary")
-        sm.text = bodyData[i+1]
-    elif(bodyData[i] == "Website (HI)"):
-        if(bodyData[i+1] != "Max ERC funding"):
+        sm.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Website (HI)"):
+        if(parser.bodyData[i+1] != "Max ERC funding"):
             web = ET.SubElement(lastProject, "Web")
-            web.text = bodyData[i+1]
+            web.text = parser.bodyData[i+1]
         else:
             web = ET.SubElement(lastProject, "Web")
             web.text = " "
-    elif(bodyData[i] == "Max ERC funding"):
+    elif(parser.bodyData[i] == "Max ERC funding"):
         mef = ET.SubElement(lastProject, "Max_ERC_funding")
-        mef.text = bodyData[i+1]
-    elif(bodyData[i] == "Duration"):
+        mef.text = parser.bodyData[i+1]
+    elif(parser.bodyData[i] == "Duration"):
         dur = ET.SubElement(lastProject, "Duration")
         sd = ET.SubElement(dur, "Start_date")
-        sd.text = bodyData[i+2]
+        sd.text = parser.bodyData[i+2]
         ed = ET.SubElement(dur, "End_date")
-        ed.text = bodyData[i+4]
+        ed.text = parser.bodyData[i+4]
         i+=4
+    else:
+        pass
     i+=1
-
+f = open('salida.xml','w')
+f.write('<?xml version="1.0" encoding="utf-8"?>')
+f.write('<!DOCTYPE CGProjects SYSTEM "validador.dtd">')
+f.close()
 # excritura en un fichero xml del arbol
 tree = ET.ElementTree(top)
 tree.write("salida.xml")
