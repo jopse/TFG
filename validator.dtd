@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!ELEMENT CGProjects (Project*)>
+<!ELEMENT Project (Rcn,Nid,Name,PI,HI,Call_Details,Summary,Web?,Max_ERC_funding,Duration)>
+
+<!ELEMENT Rcn (#PCDATA) >
+<!ELEMENT Nid (#PCDATA)>
+<!ELEMENT Name (#PCDATA)>
+<!ELEMENT PI (#PCDATA)>
+<!ELEMENT HI (#PCDATA)>
+<!ELEMENT Summary (#PCDATA)>
+<!ELEMENT Web (#PCDATA)>
+<!ELEMENT Max_ERC_funding (#PCDATA)>
+
+<!ELEMENT Duration (Start_date,End_date)>
+<!ELEMENT Start_date(#PCDATA)>
+<!ELEMENT End_date(#PCDATA)>
+
+<!ATTLIST Project acronym CDATA #REQUIRED>
