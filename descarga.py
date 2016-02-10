@@ -5,6 +5,7 @@ Created on 1/10/2015
 @author: Jose Angel Gonzalez Mejias
 '''
 import urllib.request as request
+import logging
 from html.entities import name2codepoint
 from html.parser import HTMLParser
 import xml.etree.cElementTree as ET
