@@ -9,6 +9,7 @@ import logging
 from html.entities import name2codepoint
 from html.parser import HTMLParser
 import xml.etree.cElementTree as ET
+import sys
 
 SHORT_URL="/projects-and-results/erc-funded-projects?f[2]=sm_field_cordis_project_funding%3A{0!s}%20%28{1!s}%29"
 URL = "http://erc.europa.eu"+SHORT_URL+"&page={2!s}"
