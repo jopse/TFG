@@ -110,13 +110,11 @@ def main(argv):
             html2 = html2.decode('utf-8')
             #f.write(html)
             parser.feed(html)
-        print("Page number {0} of {1} parsed".format(i,ABBR[projectType]))
     #f.close()
     #convierte a arbol xml los proyectos
     for j in range(len(parser.todosProyecto)):
         proyectoAux = parser.todosProyecto[j]
         lastProject = ET.SubElement(top, 'Project')
-        print(proyectoAux)
         try:
             lastProject.attrib={'acronym':proyectoAux['Project acronym']}
             rcn = ET.SubElement(lastProject, 'Rcn')
