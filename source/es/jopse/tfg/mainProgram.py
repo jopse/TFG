@@ -32,18 +32,23 @@ def main():
             
     logging.info('Inversion nombres de investigadores')
     for investigador in investigadores:
-        investigador.split()
-        investigador.reverse()
+        investigator = investigador.split()
+        print(investigator)
     
     
     
-    #ventana = Tk()
-    #ventana.config()
+    
+    
+    #menu1 = Menu(ventana)
+    #ventana.config(menu=menu1)
+    # menu1_1 = Menu(menu1, tearoff=0)
+    #menu1.add_cascade(label="AMARILLO")
     #pad=3
     #ventana.geometry("{0}x{1}+0+0".format(ventana.winfo_screenwidth()-pad, ventana.winfo_screenheight()-pad))
     #ventana.resizable(width=FALSE, height=FALSE)
-    #ventana.title("Universidad de Cantabria")
-    #ventana.mainloop()
+    
+    
+    #ventana.mainloop() #Crea la ventana
     
     
 if __name__ == '__main__':
