@@ -6,6 +6,7 @@ Created on 22/08/2016
 '''
 import easygui as gui
 import sys
+import os
 
 def errorMsg(methodToRun, errmsg, title):
     gui.msgbox(errmsg, title)
@@ -33,9 +34,27 @@ def enterInfo():
             errorMsg(enterInfo,errmsg,title)
     print("Reply was:", fieldValues)
 
-def main(msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
+def main(descarga, msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
     root = gui.ccbox(msg, title, ('Entrar','Hasta pronto'))
     if root:
+        gui.msgbox("Inicializando, espere por favor...")
+        condicion = False
+        while(condicion == False):
+            print("Start cog")
+            descarga.main("CoG")
+            condicion = os.path.isfile('final_CoG.xml')
+        condicion = False
+        while(condicion == False):
+            gui.msgbox("Inicializando, espere por favor...")
+            print("Start StG")
+            descarga.main("StG")
+            condicion = os.path.isfile('final_StG.xml')
+        condicion = False
+        while(condicion == False):
+            gui.msgbox("Inicializando, espere por favor...")
+            print("Start poc")
+            descarga.main("PoC")
+            condicion = os.path.isfile('final_PoC.xml')
         enterInfo()
     else:
         sys.exit(0)
