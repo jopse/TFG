@@ -7,4 +7,11 @@ Created on 26/08/2016
 from view import gui
 from controller import descarga
 
-gui.main(descarga)
+piBuscado = gui.main(descarga)
+
+#Descarga de proyectos
+#Descarga de todos los datos
+#Busqueda de PI
+###Varios resultados -> muestra de todos y seleccion de uno
+#Sacar informacion del PI buscado por identificador
+#Arbol de decision??
