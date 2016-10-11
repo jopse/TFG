@@ -11,6 +11,7 @@ import sys
 import json
 import requests
 from model import author
+from datetime import date
 
 def main(panel,projectType):
     f = open('resources/application.properties','r')
@@ -38,27 +39,31 @@ def main(panel,projectType):
         fullName = "{0};{1}".format(lastname,name)
         identifier = auth.identifier.split(":")[1]
 
-        values = getPIValues(lastName,name,identifier)
+        year = project.find('Duration').find('Start_date').text.split("-")[0][1:]
+
+        values = getPIValues(lastName,name,identifier,year)
 
         f = open('resources/authors/{0}.txt'.format(identifier),'w')
-        f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],values["year"],panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
+        f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],year,panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
         f.close()
 
 def getPITestValues(lastName,name,identifier,panel):
-    values = getPIValues(lastName,name,identifier)
+    year = date.today().year
 
-    f = open('resources/test/test.txt'.format(identifier),'w')
+    values = getPIValues(lastName,name,identifier,year)
+
+    f = open('resources/test.txt','a+')
     f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],values["year"],panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
     f.close()
 
-def getPIValues(lastName,name,identifier):
+def getPIValues(lastName,name,identifier,year):
     f = open('resources/application.properties','r')
     properties = f.read()
     properties = json.loads(properties)
     apiKey = properties["ApiKey"]
     f.close()
 
-    fullName = "{0};{1}".format(lastname,name)
+    fullName = "{0};{1}".format(lastName,name)
 
     url = "https://api.elsevier.com/content/author/author_id/{0}".format(identifier)
 
@@ -80,7 +85,6 @@ def getPIValues(lastName,name,identifier):
     docs = coredata["document-count"]
     cited_by_count = coredata["cited-by-count"]
     citation_count = coredata["citation-count"]
-    year = project.find('Duration').find('Start_date').text.split("-")[0][1:]
 
     url = "http://api.elsevier.com/content/search/scopus"
 
@@ -96,6 +100,7 @@ def getPIValues(lastName,name,identifier):
     coAuthAvg = 0
     entradas = decoded["search-results"]["entry"]
     for entrada in entradas:
+        print(entrada)
         docID = entrada["dc:identifier"]
         url = "http://api.elsevier.com/content/abstract/scopus_id/{0}".format(docID)
 

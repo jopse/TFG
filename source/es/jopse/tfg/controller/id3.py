@@ -119,7 +119,25 @@ def main():
                     fallos += 1
             print('aciertos: ' + str(aciertos) + ', fallos: ' + str(fallos))
 
+def superMain(filePath,testFilePath,columnClass):
+    instancias = parseData(filePath, columnClass)
+    arbol = id3(instancias, clases(instancias)[0])
+    print(toString(arbol))
 
+    aciertos = 0
+    fallos = 0
+    test = parseData(testFilePath, columnClass)
+    for ejemplo in test:
+        claseP = evalua(arbol, ejemplo)
+        if claseP == ejemplo[1]:
+            aciertos += 1
+        else:
+            fallos += 1
+    print('aciertos: ' + str(aciertos) + ', fallos: ' + str(fallos))
+    if aciertos == 1:
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
     main()

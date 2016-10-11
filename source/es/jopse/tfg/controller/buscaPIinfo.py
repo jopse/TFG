@@ -13,7 +13,8 @@ from model import author
 def main(fieldValues):
     name = fieldValues[0]
     lastName = fieldValues[1]
-    buscaAutorPorNombreApellido(name,lastName)
+
+    return buscaAutorPorNombreApellido(name,lastName)
 
 def buscaAutorPorNombreApellido(name,lastName):
     f = open('resources/application.properties','r')
@@ -25,7 +26,6 @@ def buscaAutorPorNombreApellido(name,lastName):
     authors = []
     url = "https://api.elsevier.com/content/search/author"
     query = "authlast({0}) and authfirst({1})".format(lastName,name)
-    print(lastName,name)
     querystring = {"query":query,"apiKey":apiKey}
     headers = {
         'accept': "application/json",
@@ -36,13 +36,12 @@ def buscaAutorPorNombreApellido(name,lastName):
     decoded = json.loads(response.text)
 
     entradas = decoded["search-results"]["entry"]
-    if decoded["search-results"]["opensearch:totalResults"] == "0":
-
-        return 0
-    else:
+    totalResults = int(decoded["search-results"]["opensearch:totalResults"])
+    if totalResults > 0:
         for entrada in entradas:
             authors.append(author.Author(entrada["preferred-name"]["initials"],entrada["preferred-name"]["given-name"],entrada["preferred-name"]["surname"],entrada["dc:identifier"]))
-
+    else:
+        return 0
     #Devuelve los resultados de la busqueda
     return authors
 

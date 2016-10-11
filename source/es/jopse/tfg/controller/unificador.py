@@ -11,9 +11,10 @@ def main():
 
     absoluteFile = open('resources/trainning.txt','w')
     for authorFile in files:
-        with open('authorFile') as f:
+        with open(authorFile) as f:
             lines = f.readlines()
-            absoluteFile.write(lines)
+            for line in lines:
+                absoluteFile.write(line)
 
     absoluteFile.close()
 

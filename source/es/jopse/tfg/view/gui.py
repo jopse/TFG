@@ -11,6 +11,7 @@ from controller import descarga
 from controller import buscaPIinfo
 from controller import piInfo
 from controller import infoDeXML
+from controller import id3
 from model import author
 
 def errorMsg(methodToRun, errmsg, title):
@@ -36,6 +37,9 @@ def enterInfo():
         if errmsg == "":
             # no problems found
             authors = buscaPIinfo.main(fieldValues)
+            if authors == 0:
+                errorMsg(enterInfo,errmsg+'SIN RESULTADOS',title)
+                return
             msg ="Elige un resultado para continuar:"
             title = "Identificador"
             choices = []
@@ -78,10 +82,19 @@ def showPIinfo(piSelected):
     piInfo.main(piID)
 
 def sacaInfoDeXML():
-    projectTypes = ["CoG","AdG","StG"]
-    for projectType in projectTypes:
-        for i in range(1,4):
-            infoDeXML.main(i,projectType)
+    actualizar = gui.ccbox("¿Quiere actualizar los datos de los inestigadores?")
+    if (actualizar):
+        projectTypes = ["CoG","AdG","StG"]
+        for projectType in projectTypes:
+            for i in range(1,4):
+                infoDeXML.main(i,projectType)
+
+def muestraResultado():
+    resultado = id3.superMain('resources/trainning.txt','resources/test.txt',9)
+    if resultado:
+        gui.msgbox("Resultado: favorable", "Identificador")
+    else:
+        gui.msgbox("Resultado: desfavorable", "Identificador")
 
 def main(msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
     root = gui.ccbox(msg, title, ('Entrar','Hasta pronto'))
