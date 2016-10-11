@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!ELEMENT CGProjects (Project*)>
 <!ELEMENT Project (Rcn,Nid,Name,PI,HI,Call_Details,Summary,Web?,Max_ERC_funding,Duration)>
 

@@ -7,6 +7,11 @@ Created on 22/08/2016
 import easygui as gui
 import sys
 import os
+from controller import descarga
+from controller import buscaPIinfo
+from controller import piInfo
+from controller import infoDeXML
+from model import author
 
 def errorMsg(methodToRun, errmsg, title):
     gui.msgbox(errmsg, title)
@@ -29,32 +34,64 @@ def enterInfo():
                 errmsg = errmsg + ('"%s" es un campo requerido.\n\n' % fieldNames[i])
 
         if errmsg == "":
-            break # no problems found
+            # no problems found
+            authors = buscaPIinfo.main(fieldValues)
+            msg ="Elige un resultado para continuar:"
+            title = "Identificador"
+            choices = []
+            for a in authors:
+                choices.append("{0} - {1}, {2} - {3}".format(a.initials,a.surename,a.givenName,a.identifier))
+            choice = gui.choicebox(msg, title, choices)
+            return choice
         else:
-            errorMsg(enterInfo,errmsg,title)
-    return fieldValues
-def descarga(desc, projectType):
-    gui.msgbox("Inicializando, espere por favor...")
-    condicion = False
-    while(condicion == False):
-        print("Start {0!s}".format(projectType))
-        desc.main(projectType)
-        condicion1 = os.path.isfile('resources/final_{0}_P1.xml'.format(projectType))
-        condicion2 = os.path.isfile('resources/final_{0}_P2.xml'.format(projectType))
-        condicion3 = os.path.isfile('resources/final_{0}_P3.xml'.format(projectType))
-        condicion4 = os.path.isfile('resources/final_{0}_P4.xml'.format(projectType))
-        if(condicion1 and condicion2 and condicion3 and condicion4): condicion = True
+            errorMsg(enterInfo, errmsg, title)
+            return
 
-def main(desc, msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
+def selectPanel():
+    msg ="Elige un panel para continuar:"
+    title = "Identificador"
+    choices = []
+    paneles = ["P1 - (PE) Physical Sciences & Engineering","P2 - (LS) Life Sciences","P3 - (SH) Social Sciences & Humanities","P4 - (ID) Interdisciplinary"]
+    for panel in paneles:
+        choices.append(panel)
+    choice = gui.choicebox(msg, title, choices)
+    return choice
+
+def descargaFicheros(projectType):
+    gui.msgbox("Inicializando, espere por favor...")
+    condicion1 = os.path.isfile('resources/final_{0}_P1.xml'.format(projectType))
+    condicion2 = os.path.isfile('resources/final_{0}_P2.xml'.format(projectType))
+    condicion3 = os.path.isfile('resources/final_{0}_P3.xml'.format(projectType))
+    condicion4 = os.path.isfile('resources/final_{0}_P4.xml'.format(projectType))
+    if(condicion1 and condicion2 and condicion3 and condicion4):
+        if confirmacionDescarga(projectType):
+            print("Start {0!s}".format(projectType))
+            descarga.main(projectType)
+    else:
+        descarga.main(projectType)
+
+def confirmacionDescarga(projectType):
+    return gui.ccbox("Ya hay proyectos descargados de {0}. ¿Quiere actualizar los datos?".format(projectType))
+
+def showPIinfo(piSelected):
+    piID = piSelected.split(",")[1].split("-")[1].split(" ")[1].split(":")[1]
+    piInfo.main(piID)
+
+def sacaInfoDeXML():
+    projectTypes = ["CoG","AdG","StG"]
+    for projectType in projectTypes:
+        for i in range(1,4):
+            infoDeXML.main(i,projectType)
+
+def main(msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
     root = gui.ccbox(msg, title, ('Entrar','Hasta pronto'))
 
     if root:
-        descarga(desc, 'PoC')
-        descarga(desc, 'CoG')
-        descarga(desc, 'AdG')
-        descarga(desc, 'SyG')
-        #descarga(desc, 'StG')
-        return enterInfo()
+        #descargaFicheros('PoC')
+        descargaFicheros('CoG')
+        descargaFicheros('AdG')
+        #descargaFicheros('SyG')
+        descargaFicheros('StG')
     else:
         sys.exit(0)
 

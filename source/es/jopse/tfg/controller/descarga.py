@@ -118,9 +118,8 @@ def main2(argv, pan):
     parser=MyHTMLParser()
     parser2=MyHTMLParser()
 
-    top = ET.Element("{0}Projects_{1}".format(projectType,pan))
+    top = ET.Element("Projects".format(projectType,pan))
     #Recorre todas las paginas para extraer los proyectos
-    print("{0}Projects_{1}".format(projectType,pan))
     allPages = False
     pages = 0
     while(allPages == False):
@@ -134,7 +133,7 @@ def main2(argv, pan):
                 pages = int(pages)
                 if(pages==0):
                     f = open('resources/final_{0}_{1}.xml'.format(projectType,pan),'w')
-                    f.write('<?xml version="1.0" encoding="utf-8"?>')
+                    f.write('<?xml version="1.0" encoding="ISO-8859-1"?>')
                     f.write('<!DOCTYPE {0}Projects Panel{1}SYSTEM "validador.dtd">'.format(projectType,pan))
                     f.close()
                     raise Exception
@@ -144,7 +143,7 @@ def main2(argv, pan):
                 print(i)
                 with request.urlopen(URL.format(urlToOpen.format(ABBR[projectType],projectType),i)) as response2:
                     html2 = response2.read()
-                    html2 = html2.decode('utf-8')
+                    html2 = html2.decode('ISO-8859-1')
 
                     parser.feed(html)
             allPages = True
@@ -182,7 +181,7 @@ def main2(argv, pan):
         except KeyError:
             continue
     f = open('resources/salida_{0}_{1}.xml'.format(projectType,pan),'w')
-    f.write('<?xml version="1.0" encoding="utf-8"?>')
+    f.write('<?xml version="1.0" encoding="ascii"?>')
     f.write('<!DOCTYPE {0}Projects Panel{1}SYSTEM "validador.dtd">'.format(projectType,pan))
     f.close()
     # excritura en un fichero xml del arbol

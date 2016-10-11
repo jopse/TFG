@@ -4,29 +4,70 @@ Created on 18/08/2016
 
 @author: Jose Angel Gonzalez Mejias
 '''
-import urllib.request as request
 import sys
-import http.client
 import json
+import requests
+from model import author
 
-def main():
-    conn = http.client.HTTPSConnection("api.elsevier.com")
-    URL = "/content/search/author?query=authlast({0})%20and%20authfirst({1})&apiKey=b3a71de2bde04544495881ed9d2f9c5b"
+
+def main(fieldValues):
+    name = fieldValues[0]
+    lastName = fieldValues[1]
+    buscaAutorPorNombreApellido(name,lastName)
+
+def buscaAutorPorNombreApellido(name,lastName):
+    f = open('resources/application.properties','r')
+    properties = f.read()
+    properties = json.loads(properties)
+    apiKey = properties["ApiKey"]
+    f.close()
+
+    authors = []
+    url = "https://api.elsevier.com/content/search/author"
+    query = "authlast({0}) and authfirst({1})".format(lastName,name)
+    print(lastName,name)
+    querystring = {"query":query,"apiKey":apiKey}
     headers = {
+        'accept': "application/json",
         'cache-control': "no-cache"
-    }
-    name = "michael"
-    lastName = "gonzalez harbour"
-    conn.request("GET", URL.format(name,lastName), headers=headers)
+        }
 
-    res = conn.getresponse()
-    data = res.read()
-    print(data)
-    #data_string = json.load(data)
-    #entradas = data_string
-    #for entrada in entradas:
-    #    if(name == entrada['preferred-name']['given-name'].lower() and lastName == entrada['preferred-name']['surname'].lower()):
-    #        print(entrada['preferred-name'])
-    #print(entradas)
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    decoded = json.loads(response.text)
+
+    entradas = decoded["search-results"]["entry"]
+    if decoded["search-results"]["opensearch:totalResults"] == "0":
+
+        return 0
+    else:
+        for entrada in entradas:
+            authors.append(author.Author(entrada["preferred-name"]["initials"],entrada["preferred-name"]["given-name"],entrada["preferred-name"]["surname"],entrada["dc:identifier"]))
+
+    #Devuelve los resultados de la busqueda
+    return authors
+
+def buscaIDPorNombreApellidoHI(nombre,apellidos,hi):
+    f = open('resources/application.properties','r')
+    properties = f.read()
+    properties = json.loads(properties)
+    apiKey = properties["ApiKey"]
+    f.close()
+
+    authors = []
+    url = "https://api.elsevier.com/content/search/author"
+    query = "authlast({0}) and authfirst({1}) and affil({2})".format(apellidos,nombre,hi)
+
+    querystring = {"query":query,"apiKey":apiKey}
+    headers = {
+        'accept': "application/json",
+        'cache-control': "no-cache"
+        }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    decoded = json.loads(response.text)
+
+    entradas = decoded["search-results"]["entry"]
+    return entradas[0]["dc:identifier"]
+
 if __name__ == "__main__":
     main()
