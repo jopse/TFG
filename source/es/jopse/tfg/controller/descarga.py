@@ -132,7 +132,7 @@ def main2(argv, pan):
                 pages = parser2.numPages
                 pages = int(pages)
                 if(pages==0):
-                    f = open('resources/final_{0}_{1}.xml'.format(projectType,pan),'w')
+                    f = open('resources/projects/final_{0}_{1}.xml'.format(projectType,pan),'w')
                     f.write('<?xml version="1.0" encoding="ISO-8859-1"?>')
                     f.write('<!DOCTYPE {0}Projects Panel{1}SYSTEM "validador.dtd">'.format(projectType,pan))
                     f.close()
@@ -140,12 +140,13 @@ def main2(argv, pan):
                 print(pages)
         else:
             for i in range(pages):
-                print(i)
-                with request.urlopen(URL.format(urlToOpen.format(ABBR[projectType],projectType),i)) as response2:
+                #print(i)
+                #print(URL.format(urlToOpen.format(ABBR[projectType],projectType),str(i)))
+                with request.urlopen(URL.format(urlToOpen.format(ABBR[projectType],projectType),str(i))) as response2:
                     html2 = response2.read()
                     html2 = html2.decode('ISO-8859-1')
 
-                    parser.feed(html)
+                    parser.feed(html2)
             allPages = True
 
     #convierte a arbol xml los proyectos
@@ -180,15 +181,15 @@ def main2(argv, pan):
             ed.text = proyectoAux['End date:']
         except KeyError:
             continue
-    f = open('resources/salida_{0}_{1}.xml'.format(projectType,pan),'w')
+    f = open('resources/projects/salida_{0}_{1}.xml'.format(projectType,pan),'w')
     f.write('<?xml version="1.0" encoding="ascii"?>')
     f.write('<!DOCTYPE {0}Projects Panel{1}SYSTEM "validador.dtd">'.format(projectType,pan))
     f.close()
     # excritura en un fichero xml del arbol
     tree = ET.ElementTree(top)
-    tree.write('resources/salida_{0}_{1}.xml'.format(projectType,pan))
-    copyfile('resources/salida_{0}_{1}.xml'.format(projectType,pan),'resources/final_{0}_{1}.xml'.format(projectType,pan))
-    os.remove('resources/salida_{0}_{1}.xml'.format(projectType,pan))
+    tree.write('resources/projects/salida_{0}_{1}.xml'.format(projectType,pan))
+    copyfile('resources/projects/salida_{0}_{1}.xml'.format(projectType,pan),'resources/projects/final_{0}_{1}.xml'.format(projectType,pan))
+    os.remove('resources/projects/salida_{0}_{1}.xml'.format(projectType,pan))
 
 if __name__ == "__main__":
     main(sys.argv)

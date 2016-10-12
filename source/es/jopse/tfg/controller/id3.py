@@ -56,7 +56,7 @@ def chooseAttr(insts):
 def parseData(filename, classCol):
     filedata = transpose([line.replace('\n','').split(', ') for line in fin.input(filename)])
     clases = filedata[classCol]
-    data = transpose(filedata[:classCol] + filedata[classCol+1:])
+    data = transpose(filedata[1:classCol] + filedata[classCol+1:])
     return list(zip(data, clases))
 
 

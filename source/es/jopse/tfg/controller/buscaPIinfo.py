@@ -41,6 +41,7 @@ def buscaAutorPorNombreApellido(name,lastName):
         for entrada in entradas:
             authors.append(author.Author(entrada["preferred-name"]["initials"],entrada["preferred-name"]["given-name"],entrada["preferred-name"]["surname"],entrada["dc:identifier"]))
     else:
+        print("Autor no encontrado {0} {1}".format(name,lastName))
         return 0
     #Devuelve los resultados de la busqueda
     return authors

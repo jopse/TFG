@@ -20,11 +20,12 @@ def main(panel,projectType):
     apiKey = properties["ApiKey"]
     f.close()
 
-
-    tree = ET.parse('resources/final_{0}_P{1}.xml'.format(projectType,panel))
+    print('final_{0}_P{1}.xml'.format(projectType,panel))
+    tree = ET.parse('resources/projects/final_{0}_P{1}.xml'.format(projectType,panel))
     root = tree.getroot()
 
     for project in root.findall('Project'):
+        print(project.find('Rcn').text)
         pi = project.find('PI').text
         pi = pi.split(" ")
         lastname = pi[-1]
@@ -41,18 +42,19 @@ def main(panel,projectType):
 
         year = project.find('Duration').find('Start_date').text.split("-")[0][1:]
 
-        values = getPIValues(lastName,name,identifier,year)
+        values = getPIValues(lastname,name,identifier,year)
 
-        f = open('resources/authors/{0}.txt'.format(identifier),'w')
-        f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],year,panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
+        f = open('resources/authors/{0}.txt'.format(identifier),'a+')
+        f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1\n".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],year,panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
         f.close()
+    return 0
 
 def getPITestValues(lastName,name,identifier,panel):
     year = date.today().year
 
     values = getPIValues(lastName,name,identifier,year)
 
-    f = open('resources/test.txt','a+')
+    f = open('resources/test.txt','w')
     f.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, 1".format(values["fullName"],values["docs"],values["cited_by_count"],values["citation_count"],values["year"],panel,values["hindex"],values["coauthor_count"],values["coAuthAvg"]))
     f.close()
 
@@ -98,13 +100,16 @@ def getPIValues(lastName,name,identifier,year):
     decoded = json.loads(response.text)
 
     coAuthAvg = 0
+    quartiles = getQuartiles()
+    quartilesPI = [0,0,0,0]
     entradas = decoded["search-results"]["entry"]
     for entrada in entradas:
-        print(entrada)
+
         docID = entrada["dc:identifier"]
+        #print(docID)
         url = "http://api.elsevier.com/content/abstract/scopus_id/{0}".format(docID)
 
-        querystring = {"apiKey":apiKey}
+        querystring = {"apiKey":apiKey,"field":"prism:issn,authors"}
         headers = {
             'accept': "application/json",
             'cache-control': "no-cache"
@@ -112,10 +117,49 @@ def getPIValues(lastName,name,identifier,year):
 
         response = requests.request("GET", url, headers=headers, params=querystring)
         decoded = json.loads(response.text)
+
+        quartil = "NONE"
+        try:
+            issn = decoded["abstracts-retrieval-response"]["coredata"]["prism:issn"]
+            f = open('resources/journals/{0}.txt'.format(issn),'r')
+            text = f.read()
+            f.close()
+
+            text = json.loads(text)
+            sjr = text['sjr'][str(year)]
+            quartilesPI = getQuartil(sjr,year,quartiles,quartilesPI)[1]
+            quartil = getQuartil(sjr,year,quartiles,quartilesPI)[0]
+        except:
+            pass
         coAuthAvg = coAuthAvg + len(decoded["abstracts-retrieval-response"]["authors"])
     coAuthAvg = coAuthAvg/len(entradas)
 
-    return {"fullName":fullName,"docs":docs,"cited_by_count":cited_by_count,"citation_count":citation_count,"year":year,"hindex":hindex,"coauthor_count":coauthor_count,"coAuthAvg":coAuthAvg}
+    return {"fullName":fullName,"docs":docs,"cited_by_count":cited_by_count,"citation_count":citation_count,"year":year,"hindex":hindex,"coauthor_count":coauthor_count,"coAuthAvg":coAuthAvg,"quartil":quartil,"quartilesPI":quartilesPI}
+
+def getPIQuartiles(identifier,panel):
+    values = getPIValues("","",identifier,year)
+    return values["quartilesPI"]
+
+def getQuartiles():
+    f = open('resources/quartiles.txt','r')
+    text = f.read()
+    f.close()
+    return json.loads(text)
+
+def getQuartil(sjr,year,quartiles,quartilesPI):
+    qx = quartiles['quartiles'][str(year)]
+    if sjr <= qx['q1']:
+        quartilesPI[0] = quartilesPI[0]+1
+        return ["q1",quartilesPI]
+    elif sjr <= qx['q2']:
+        quartilesPI[1] = quartilesPI[1]+1
+        return ["q2",quartilesPI]
+    elif sjr <= qx['q3']:
+        quartilesPI[2] = quartilesPI[2]+1
+        return ["q3",quartilesPI]
+    else:
+        quartilesPI[3] = quartilesPI[3]+1
+        return ["q4",quartilesPI]
 
 if __name__ == "__main__":
     main(sys.argv)

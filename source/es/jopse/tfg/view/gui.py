@@ -12,6 +12,8 @@ from controller import buscaPIinfo
 from controller import piInfo
 from controller import infoDeXML
 from controller import id3
+from controller import quartiles
+from controller import estadisticas
 from model import author
 
 def errorMsg(methodToRun, errmsg, title):
@@ -63,10 +65,10 @@ def selectPanel():
 
 def descargaFicheros(projectType):
     gui.msgbox("Inicializando, espere por favor...")
-    condicion1 = os.path.isfile('resources/final_{0}_P1.xml'.format(projectType))
-    condicion2 = os.path.isfile('resources/final_{0}_P2.xml'.format(projectType))
-    condicion3 = os.path.isfile('resources/final_{0}_P3.xml'.format(projectType))
-    condicion4 = os.path.isfile('resources/final_{0}_P4.xml'.format(projectType))
+    condicion1 = os.path.isfile('resources/projects/final_{0}_P1.xml'.format(projectType))
+    condicion2 = os.path.isfile('resources/projects/final_{0}_P2.xml'.format(projectType))
+    condicion3 = os.path.isfile('resources/projects/final_{0}_P3.xml'.format(projectType))
+    condicion4 = os.path.isfile('resources/projects/final_{0}_P4.xml'.format(projectType))
     if(condicion1 and condicion2 and condicion3 and condicion4):
         if confirmacionDescarga(projectType):
             print("Start {0!s}".format(projectType))
@@ -88,13 +90,29 @@ def sacaInfoDeXML():
         for projectType in projectTypes:
             for i in range(1,4):
                 infoDeXML.main(i,projectType)
+    else:
+        return False
+
+def descargaJRC():
+    actualizar = gui.ccbox("¿Quiere actualizar los datos de quartiles?")
+    if (actualizar):
+        quartiles.main()
+    else:
+        return False
+
+def Must():
+    gui.msgbox("Tiene que seleccionar un panel")
 
 def muestraResultado():
     resultado = id3.superMain('resources/trainning.txt','resources/test.txt',9)
     if resultado:
         gui.msgbox("Resultado: favorable", "Identificador")
     else:
-        gui.msgbox("Resultado: desfavorable", "Identificador")
+        gui.msgbox("Resultado: desfavorable\nA continuación podrá ver estadísticas", "Identificador")
+
+def muestraEstadisticas(identifier,panel):
+    quartilesPI = infoDeXML.getPIQuartiles(identifier,panel)
+    estadisticas.main(quartilesPI)
 
 def main(msg="Bienvenido al identificador", title="Identificador", ok_button="OK"):
     root = gui.ccbox(msg, title, ('Entrar','Hasta pronto'))

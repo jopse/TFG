@@ -15,10 +15,15 @@ def main():
 
     #Sacar investigador y datos de cada investigador y guardarlo
     gui.sacaInfoDeXML()
-
+    #Descarga datos de cuartiles
+    gui.descargaJRC()
     #Busqueda de PI
     ###Varios resultados -> muestra de todos y seleccion de uno
-    panelSelected = gui.selectPanel()
+
+    panelSelected = False
+    while panelSelected is False:
+        gui.Must()
+        panelSelected = gui.selectPanel()
     piSelected = gui.enterInfo()
 
     values = piSelected.split(" - ")
@@ -31,6 +36,8 @@ def main():
     #Aplicar ID3
     gui.muestraResultado()
 
+    #Mostrar estadísticas
+    gui.muestraEstadisticas(values[2].split(":")[1],panelSelected.split(" - ")[0])
 
 if __name__ == "__main__":
     main()
